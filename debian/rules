@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE=1
+
+UPSTREAM_GIT = git://github.com/openstack-infra/nodepool.git
+
+include /usr/share/openstack-pkg-tools/pkgos.make
+
+export OSLO_PACKAGE_VERSION=$(VERSION)
+
+%:
+	dh $@ --with python2
+	#dh $@ --with python2,sphinxdoc
+
+# Sphinx documentation invokes `nodepool --help` hence Build-Dep should list
+# all requirements :(
+#
+#override_dh_installdocs:
+#	PYTHONPATH=$(CURDIR)/debian/nodepool/usr/lib/python2.7/dist-packages pip freeze
+#	#PATH=$(PATH):$(CURDIR)/debian/nodepool/usr/bin PYTHONPATH=$(CURDIR)/debian/nodepool/usr/lib/python2.7/dist-packages nodepool --help
+#	PATH=$(PATH):$(CURDIR)/debian/nodepool/usr/bin PYTHONPATH=$(CURDIR)/debian/nodepool/usr/lib/python2.7/dist-packages make -C doc html man
+#	dh_installdocs build/html
+#	dh_installdocs build/man
+
+override_dh_auto_clean:
+	rm -rf *.egg
+	rm -rf doc/build
+
+#override_dh_sphinxdoc:
+#	dh_sphinxdoc /usr/share/doc/nodepool/html

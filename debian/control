@@ -1,0 +1,31 @@
+Source: nodepool
+Maintainer: Antoine Musso <hashar@free.fr>
+Priority: optional
+Section: python
+X-Python-Version: = 2.7
+Build-Depends: adduser,
+ debhelper (>=9),
+ dh-python,
+ openstack-pkg-tools,
+# dh_python2 can't map daemon and PyMysql to Debian packages:
+ python-daemon,
+ python-pymysql,
+ python-pbr,
+ python (>= 2.7),
+ python (<< 2.8)
+Standards-Version: 3.9.6
+Homepage: http://ci.openstack.org/nodepool/
+Vcs-Git: https://review.openstack.org/openstack-infra/nodepool.git
+Vcs-Browser: https://review.openstack.org/gitweb?p=openstack-infra/nodepool.git
+
+Package: nodepool
+Architecture: any
+Pre-Depends: python2.7
+Depends: ${python:Depends},
+ ${shlibs:Depends},
+ ${misc:Depends}
+Description: Launch single use test nodes on OpenStack
+ Nodepool is a system for launching single-use test nodes on demand based on
+ images built with cached data. It is designed to work with any OpenStack based
+ cloud, and is part of a suite of tools that form a comprehensive test system
+ including Jenkins and Zuul.

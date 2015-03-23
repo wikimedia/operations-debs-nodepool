@@ -1,0 +1,5 @@
+nodepool (0.0.1-104-gddd6003-wmf1) jessie-wikimedia; urgency=low
+
+  * Initial release. (Closes: #781027)
+
+ -- Antoine Musso <hashar@free.fr>  Mon, 23 Mar 2015 15:07:07 +0100
