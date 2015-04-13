@@ -1,0 +1,59 @@
+#!/bin/bash
+
+echo "*** fake-image-create: start"
+
+echo "arguments:"
+echo "----"
+echo $*
+echo "----"
+
+if [[ "${SHOULD_FAIL}" == 'true' ]]; then
+    echo "Should fail is set, exiting with status 127"
+    exit 127
+fi
+
+if [[ "${DIB_RELEASE}" != "21" ]]; then
+    echo "DIB_RELEASE not set correctly"
+    exit 1
+fi
+
+# test passing of real-life env-vars
+if [[ "${TMPDIR}" != "/opt/dib_tmp" ]]; then
+    echo "TMPDIR not set"
+    exit 1
+fi
+
+if [[ "${DIB_IMAGE_CACHE}" != "/opt/dib_cache" ]]; then
+    echo "DIB_IMAGE_CACHE not set"
+    exit 1
+fi
+
+if [[ "${DIB_CLOUD_IMAGES}" != "http://download.fedoraproject.org/pub/fedora/linux/releases/test/21-Beta/Cloud/Images/x86_64/" ]]; then
+    echo "DIB_CLOUD_IMAGES not set"
+    exit 1
+fi
+
+if [[ "${BASE_IMAGE_FILE}" != "Fedora-Cloud-Base-20141029-21_Beta.x86_64.qcow2" ]]; then
+    echo "BASE_IMAGE_FILE not set"
+    exit 1
+fi
+
+outfile=
+
+TEMP=$(getopt -o o: -- "$@")
+eval set -- "$TEMP"
+while true ; do
+    case "$1" in
+        -o) outfile=$2; shift 2;;
+        --) shift ; break ;;
+    esac
+done
+
+if [ -z "$outfile" ]; then
+    echo "No output file specified."
+    exit 1
+else
+    echo "fake-data" > $outfile
+fi
+
+echo "*** fake-image-create: done"
