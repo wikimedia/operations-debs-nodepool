@@ -1,3 +1,12 @@
+nodepool (0.0.1-104-gddd6003-wmf2) jessie-wikimedia; urgency=low
+
+  * Include patch pending review
+    [Support spaces in Gearman functions names]
+    https://gerrit.wikimedia.org/r/#/c/205564/
+    https://review.openstack.org/#/c/175791/
+
+ -- Antoine Musso <hashar@free.fr>  Tue, 21 Apr 2015 12:19:07 +0200
+
 nodepool (0.0.1-104-gddd6003-wmf1) jessie-wikimedia; urgency=low
 
   * Initial release. (Closes: #781027)
