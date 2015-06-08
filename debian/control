@@ -21,7 +21,8 @@ Vcs-Browser: https://review.openstack.org/gitweb?p=openstack-infra/nodepool.git
 Package: nodepool
 Architecture: any
 Pre-Depends: python2.7
-Depends: ${python:Depends},
+Depends: parted,
+ ${python:Depends},
  ${shlibs:Depends},
  ${misc:Depends}
 Description: Launch single use test nodes on OpenStack
