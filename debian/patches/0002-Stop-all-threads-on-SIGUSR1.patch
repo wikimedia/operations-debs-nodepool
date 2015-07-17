@@ -1,0 +1,117 @@
+From: Antoine Musso <hashar@free.fr>
+Date: Fri, 17 Jul 2015 22:05:15 +0200
+Subject: Stop all threads on SIGUSR1
+
+I noticed SIGUSR1 is supposed to gracefully stop nodepool. Unfortunately
+a lot of threads are never stopped and thus never stop.
+
+[nodepoold.py]
+Ignore SIGUSR1 while it is being dealt with. I had some side effect when
+sending it twice in a row.
+
+Teach the main loop to return whenever the pool is stopped after a
+signal else nodepool never leaves when I we run it in non daemon mode
+with 'nodepoold -d'.
+
+[nodepool.py]
+
+DiskImageBuilder can now be stopped. It seems it should inherit
+TaskManager but I felt it is a different topic.
+
+When Nodepool stop, also stop:
+* Jenkins managers
+* Cloud providers
+* Gearman client
+
+Add a bunch of debug log to notice what is going on.
+
+Change-Id: Ic20f919df3fab834fb1a29df5c77a4af79e740a6
+---
+ nodepool/cmd/nodepoold.py |  3 +++
+ nodepool/nodepool.py      | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
+
+diff --git a/nodepool/cmd/nodepoold.py b/nodepool/cmd/nodepoold.py
+index d8ee3c4..3ee95bb 100644
+--- a/nodepool/cmd/nodepoold.py
++++ b/nodepool/cmd/nodepoold.py
+@@ -110,6 +110,7 @@ class NodePoolDaemon(object):
+                                        '%(message)s')
+ 
+     def exit_handler(self, signum, frame):
++        signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+         self.pool.stop()
+ 
+     def term_handler(self, signum, frame):
+@@ -129,6 +130,8 @@ class NodePoolDaemon(object):
+         while True:
+             try:
+                 signal.pause()
++                if self.pool._stopped:
++                    return 0
+             except KeyboardInterrupt:
+                 return self.exit_handler(signal.SIGINT, None)
+ 
+diff --git a/nodepool/nodepool.py b/nodepool/nodepool.py
+index cec2dc8..b2745b2 100644
+--- a/nodepool/nodepool.py
++++ b/nodepool/nodepool.py
+@@ -732,13 +732,23 @@ class DiskImageBuilder(threading.Thread):
+ 
+     def __init__(self, nodepool):
+         threading.Thread.__init__(self, name='DiskImageBuilder queue')
++        self._running = True
+         self.nodepool = nodepool
+         self.queue = nodepool._image_builder_queue
+ 
++    def stop(self):
++        self.log.info("Stopping...")
++        self._running = False
++        self.queue.put(None)
++
+     def run(self):
+         while True:
+             # grabs image id from queue
+             image_id = self.queue.get()
++            if not image_id:
++                if not self._running:
++                    break
++                continue
+             try:
+                 self.buildImage(image_id)
+             except Exception:
+@@ -1175,15 +1185,34 @@ class NodePool(threading.Thread):
+         self._image_builder_thread = None
+ 
+     def stop(self):
++        self.log.info("Stopping Nodepool...")
+         self._stopped = True
++        self.log.debug("Stopping DiskImageBuilder")
++        self._image_builder_thread.stop()
++
+         if self.config:
++            self.log.debug("Stopping zmq publishers")
+             for z in self.config.zmq_publishers.values():
+                 z.listener.stop()
+                 z.listener.join()
++            self.log.debug("Stopping Jenkins managers")
++            for j in self.config.jenkins_managers.values():
++                j.stop()
++            self.log.debug("Stopping cloud providers")
++            for p in self.config.provider_managers.values():
++                p.stop()
++
++        if self.gearman_client:
++            self.log.debug("Stopping Gearman client")
++            self.gearman_client.shutdown()
++            self.gearman_client = None
+         if self.zmq_context:
++            self.log.debug("Deleting zmq context")
+             self.zmq_context.destroy()
+         if self.apsched:
++            self.log.debug("Stopping scheduler")
+             self.apsched.shutdown()
++        self.log.info("Nodepool is stopped")
+ 
+     def waitForBuiltImages(self):
+         # wait on the queue until everything has been processed

@@ -1,1 +1,2 @@
 0001-Support-spaces-in-Gearman-functions-names.patch
+0002-Stop-all-threads-on-SIGUSR1.patch

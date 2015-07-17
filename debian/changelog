@@ -1,3 +1,12 @@
+nodepool (0.0.1-104-gddd6003-wmf4) jessie-wikimedia; urgency=medium
+
+  * Include patch pending review
+    [Stop all threads on SIGUSR1]
+    https://gerrit.wikimedia.org/r/#/c/225410/
+    https://review.openstack.org/#/c/203232/
+
+ -- Antoine Musso <hashar@free.fr>  Fri, 17 Jul 2015 22:40:37 +0200
+
 nodepool (0.0.1-104-gddd6003-wmf3) jessie-wikimedia; urgency=low
 
   * Depends on parted package
