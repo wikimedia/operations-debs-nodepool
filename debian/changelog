@@ -1,3 +1,10 @@
+nodepool (0.1.0-wmf1) jessie-wikimedia; urgency=medium
+
+  * Bump to upstream 0.1.0
+  * Depends on python-novaclient >=2.21.0 matched by jessie-backports
+
+ -- Antoine Musso <hashar@free.fr>  Wed, 29 Jul 2015 11:05:10 +0200
+
 nodepool (0.0.1-104-gddd6003-wmf4) jessie-wikimedia; urgency=medium
 
   * Include patch pending review

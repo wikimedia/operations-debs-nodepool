@@ -9,6 +9,7 @@ Build-Depends: adduser,
  openstack-pkg-tools,
 # dh_python2 can't map daemon and PyMysql to Debian packages:
  python-daemon,
+ python-novaclient (>=2.21.0),
  python-pymysql,
  python-pbr,
  python (>= 2.7),
