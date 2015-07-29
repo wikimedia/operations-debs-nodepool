@@ -17,7 +17,11 @@ import fixtures
 
 from nodepool import tests
 from nodepool import nodedb
+import nodepool.fakeprovider
 import nodepool.nodepool
+
+import requests.exceptions
+from testtools import ExpectedException
 
 
 class TestNodepool(tests.DBTestCase):
@@ -55,6 +59,42 @@ class TestNodepool(tests.DBTestCase):
                                      target_name='fake-target',
                                      state=nodedb.READY)
         self.assertEqual(len(nodes), 1)
+
+    def test_dib_node_vhd_image(self):
+        """Test that a dib image and node are created vhd image"""
+        configfile = self.setup_config('node_dib_vhd.yaml')
+        pool = self.useNodepool(configfile, watermark_sleep=1)
+        pool.start()
+        self.waitForImage(pool, 'fake-dib-provider', 'fake-dib-image')
+        self.waitForNodes(pool)
+
+        with pool.getDB().getSession() as session:
+            nodes = session.getNodes(provider_name='fake-dib-provider',
+                                     label_name='fake-dib-label',
+                                     target_name='fake-target',
+                                     state=nodedb.READY)
+        self.assertEqual(len(nodes), 1)
+
+    def test_dib_node_vhd_and_qcow2(self):
+        """Test label provided by vhd and qcow2 images builds"""
+        configfile = self.setup_config('node_dib_vhd_and_qcow2.yaml')
+        pool = self.useNodepool(configfile, watermark_sleep=1)
+        pool.start()
+        self.waitForImage(pool, 'fake-provider1', 'fake-dib-image')
+        self.waitForImage(pool, 'fake-provider2', 'fake-dib-image')
+        self.waitForNodes(pool)
+
+        with pool.getDB().getSession() as session:
+            nodes = session.getNodes(provider_name='fake-provider1',
+                                     label_name='fake-label',
+                                     target_name='fake-target',
+                                     state=nodedb.READY)
+            self.assertEqual(len(nodes), 1)
+            nodes = session.getNodes(provider_name='fake-provider2',
+                                     label_name='fake-label',
+                                     target_name='fake-target',
+                                     state=nodedb.READY)
+            self.assertEqual(len(nodes), 1)
 
     def test_dib_and_snap_label(self):
         """Test that a label with dib and snapshot images build."""
@@ -243,3 +283,32 @@ class TestNodepool(tests.DBTestCase):
             # Make sure our old node is in delete state
             self.assertEqual(len(deleted_nodes), 1)
             self.assertEqual(node_id, deleted_nodes[0].id)
+
+    def test_proxy_timeout(self):
+        """Test that we re-run a task after a ProxyError"""
+        configfile = self.setup_config('node.yaml')
+        pool = self.useNodepool(configfile, watermark_sleep=1)
+        pool.start()
+        self.waitForNodes(pool)
+
+        provider = pool.config.providers['fake-provider']
+        manager = pool.getProviderManager(provider)
+
+        # In order to test recovering from a ProxyError from the client
+        # we are going manually set the client object to be a bad client that
+        # always raises a ProxyError. If our client reset works correctly
+        # then we will create a new client object, which in this case would
+        # be a new fake client in place of the bad client.
+        manager._client = nodepool.fakeprovider.BAD_CLIENT
+
+        # The only implemented function for the fake and bad clients
+        # If we don't raise an uncaught exception, we pass
+        manager.listExtensions()
+
+        # Now let's do it again, but let's prevent the client object from being
+        # replaced and then assert that we raised the exception that we expect.
+        manager._client = nodepool.fakeprovider.BAD_CLIENT
+        manager._getClient = lambda: nodepool.fakeprovider.BAD_CLIENT
+
+        with ExpectedException(requests.exceptions.ProxyError):
+            manager.listExtensions()
