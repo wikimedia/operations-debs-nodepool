@@ -1,3 +1,10 @@
+nodepool (0.1.1-wmf1) jessie-wikimedia; urgency=medium
+
+  * Bump to upstream 0.1.0
+  * Patch "Support spaces in Gearman functions names" merged upstream
+
+ -- Antoine Musso <hashar@free.fr>  Wed, 02 Sep 2015 15:36:49 +0000
+
 nodepool (0.1.0-wmf1) jessie-wikimedia; urgency=medium
 
   * Bump to upstream 0.1.0

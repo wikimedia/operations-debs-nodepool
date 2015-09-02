@@ -53,10 +53,10 @@ index d8ee3c4..3ee95bb 100644
                  return self.exit_handler(signal.SIGINT, None)
  
 diff --git a/nodepool/nodepool.py b/nodepool/nodepool.py
-index cec2dc8..b2745b2 100644
+index 2ea428a..691f35f 100644
 --- a/nodepool/nodepool.py
 +++ b/nodepool/nodepool.py
-@@ -732,13 +732,23 @@ class DiskImageBuilder(threading.Thread):
+@@ -742,13 +742,23 @@ class DiskImageBuilder(threading.Thread):
  
      def __init__(self, nodepool):
          threading.Thread.__init__(self, name='DiskImageBuilder queue')
@@ -80,7 +80,7 @@ index cec2dc8..b2745b2 100644
              try:
                  self.buildImage(image_id)
              except Exception:
-@@ -1175,15 +1185,34 @@ class NodePool(threading.Thread):
+@@ -1186,15 +1196,34 @@ class NodePool(threading.Thread):
          self._image_builder_thread = None
  
      def stop(self):
