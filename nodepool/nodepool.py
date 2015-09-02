@@ -249,7 +249,7 @@ class GearmanClient(gear.Client):
                 self._lostConnection(connection)
                 continue
             for line in req.response.split('\n'):
-                parts = [x.strip() for x in line.split()]
+                parts = [x.strip() for x in line.split('\t')]
                 if not parts or parts[0] == '.':
                     continue
                 if not parts[0].startswith('build:'):
@@ -413,10 +413,12 @@ class NodeLauncher(threading.Thread):
 
         self.node.ip_private = server.get('private_v4')
         self.node.ip = ip
-        self.log.debug("Node id: %s is running, ip: %s, testing ssh" %
+        self.log.debug("Node id: %s is running, ip: %s, ipv6: %s" %
+                       (self.node.id, ip, server.get('public_v6')))
+
+        self.log.debug("Node id: %s testing ssh at ip: %s" %
                        (self.node.id, ip))
         connect_kwargs = dict(key_filename=self.image.private_key)
-
         if not utils.ssh_connect(ip, self.image.username,
                                  connect_kwargs=connect_kwargs,
                                  timeout=self.timeout):
@@ -693,7 +695,11 @@ class SubNodeLauncher(threading.Thread):
         self.subnode.ip_private = server.get('private_v4')
         self.subnode.ip = ip
         self.log.debug("Subnode id: %s for node id: %s is running, "
-                       "ip: %s, testing ssh" %
+                       "ip: %s, ipv6: %s" %
+                       (self.subnode_id, self.node_id, ip,
+                        server.get('public_v6')))
+
+        self.log.debug("Subnode id: %s for node id: %s testing ssh at ip: %s" %
                        (self.subnode_id, self.node_id, ip))
         connect_kwargs = dict(key_filename=self.image.private_key)
         if not utils.ssh_connect(ip, self.image.username,
@@ -1457,7 +1463,7 @@ class NodePool(threading.Thread):
                         oldmanager = None
                 if oldmanager:
                     config.jenkins_managers[t.name] = oldmanager
-                else:
+                elif t.jenkins_url:
                     self.log.debug("Creating new JenkinsManager object "
                                    "for %s" % t.name)
                     config.jenkins_managers[t.name] = \
@@ -1467,16 +1473,18 @@ class NodePool(threading.Thread):
                 oldmanager.stop()
 
             for t in config.targets.values():
-                try:
-                    info = config.jenkins_managers[t.name].getInfo()
-                    if info['quietingDown']:
-                        self.log.info("Target %s is offline" % t.name)
+                if t.jenkins_url:
+                    try:
+                        info = config.jenkins_managers[t.name].getInfo()
+                        if info['quietingDown']:
+                            self.log.info("Target %s is offline" % t.name)
+                            t.online = False
+                        else:
+                            t.online = True
+                    except Exception:
+                        self.log.exception("Unable to check status of %s" %
+                                           t.name)
                         t.online = False
-                    else:
-                        t.online = True
-                except Exception:
-                    self.log.exception("Unable to check status of %s" % t.name)
-                    t.online = False
 
     def reconfigureCrons(self, config):
         cron_map = {
@@ -1514,7 +1522,8 @@ class NodePool(threading.Thread):
         configured = set(config.zmq_publishers.keys())
         if running == configured:
             self.log.debug("ZMQ Listeners do not need to be updated")
-            config.zmq_publishers = self.config.zmq_publishers
+            if self.config:
+                config.zmq_publishers = self.config.zmq_publishers
             return
 
         if self.zmq_context:
