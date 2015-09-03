@@ -1,0 +1,41 @@
+From: Timothy Chavez <timothy.chavez@hp.com>
+Date: Tue, 2 Jun 2015 11:28:49 -0500
+Subject: Convert timing metrics to milliseconds
+
+Timing metrics which are sent to statsd must be in milliseconds[1].
+
+[1] http://statsd.readthedocs.org/en/latest/types.html#timers
+
+Change-Id: Iaaa40b88aa670aaef41c4dab0231c6cb8f5498bc
+---
+ nodepool/nodepool.py     | 3 +--
+ nodepool/task_manager.py | 2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/nodepool/nodepool.py b/nodepool/nodepool.py
+index 21f4c4e..d0a20ff 100644
+--- a/nodepool/nodepool.py
++++ b/nodepool/nodepool.py
+@@ -127,8 +127,7 @@ class NodeCompleteThread(threading.Thread):
+ 
+         if statsd and self.result == 'SUCCESS':
+             start = node.state_time
+-            end = time.time()
+-            dt = end - start
++            dt = int((time.time() - start) * 1000)
+ 
+             # nodepool.job.tempest
+             key = 'nodepool.job.%s' % self.jobname
+diff --git a/nodepool/task_manager.py b/nodepool/task_manager.py
+index 487e28a..48108d7 100644
+--- a/nodepool/task_manager.py
++++ b/nodepool/task_manager.py
+@@ -103,7 +103,7 @@ class TaskManager(threading.Thread):
+                     #nodepool.task.PROVIDER.subkey
+                     subkey = type(task).__name__
+                     key = 'nodepool.task.%s.%s' % (self.name, subkey)
+-                    statsd.timing(key, dt)
++                    statsd.timing(key, int(dt * 1000))
+                     statsd.incr(key)
+ 
+                 self.queue.task_done()

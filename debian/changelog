@@ -1,3 +1,22 @@
+nodepool (0.1.1-wmf2) jessie-wikimedia; urgency=medium
+
+  * Support python-statsd >= 3.x
+  * Patches:
+
+    0002-Debug-dying-task-managers.patch
+        [757d45b] Debug dying task managers
+        Clark Boylan <clark.boylan@gmail.com>
+
+    0003-Convert-to-use-latest-statsd-version.patch
+        [8e6b1b9] Convert to use latest statsd version
+        Ian Wienand <iwienand@redhat.com>
+
+    0004-Convert-timing-metrics-to-milliseconds.patch
+        [bd3c218] Convert timing metrics to milliseconds
+        Timothy Chavez <timothy.chavez@hp.com>
+
+ -- Antoine Musso <hashar@free.fr>  Thu, 03 Sep 2015 09:51:57 +0000
+
 nodepool (0.1.1-wmf1) jessie-wikimedia; urgency=medium
 
   * Bump to upstream 0.1.0
