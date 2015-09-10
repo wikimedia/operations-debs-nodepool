@@ -1,0 +1,26 @@
+From: Antoine Musso <hashar@free.fr>
+Date: Wed, 9 Sep 2015 18:34:26 +0200
+Subject: Add 'debian' user in bootstrapServer()
+
+The method attempt to login as 'root' then iterate a few well known
+usernames.  Debian recommands using 'debian'.
+
+Change-Id: If3f0f0137850e60780515c69329465837c4c91d8
+---
+ nodepool/nodepool.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/nodepool/nodepool.py b/nodepool/nodepool.py
+index d0a20ff..397284d 100644
+--- a/nodepool/nodepool.py
++++ b/nodepool/nodepool.py
+@@ -1085,7 +1085,8 @@ def bootstrapServer(self, server, key, use_password=False):
+             # We have connected to the node but couldn't do anything as root
+             # try distro specific users, since we know ssh is up (a timeout
+             # didn't occur), we can connect with a very sort timeout.
+-            for username in ['ubuntu', 'fedora', 'cloud-user', 'centos']:
++            for username in ['ubuntu', 'fedora', 'cloud-user', 'centos',
++                             'debian']:
+                 try:
+                     host = utils.ssh_connect(server['public_v4'], username,
+                                              ssh_kwargs,

@@ -1,3 +1,14 @@
+nodepool (0.1.1-wmf3) jessie-wikimedia; urgency=medium
+
+  * Use 'debian' user when setting up Debian based instances.
+  * Patch:
+
+    0005-Add-debian-user-in-bootstrapServer
+        [9b16e0e] Add 'debian' user in bootstrapServer()
+        Antoine Musso <hashar@free.fr>
+
+ -- Antoine Musso <hashar@free.fr>  Thu, 10 Sep 2015 16:16:27 +0200
+
 nodepool (0.1.1-wmf2) jessie-wikimedia; urgency=medium
 
   * Support python-statsd >= 3.x

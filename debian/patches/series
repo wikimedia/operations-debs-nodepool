@@ -2,3 +2,4 @@
 0002-Debug-dying-task-managers.patch
 0003-Convert-to-use-latest-statsd-version.patch
 0004-Convert-timing-metrics-to-milliseconds.patch
+0005-Add-debian-user-in-bootstrapServer.patch
