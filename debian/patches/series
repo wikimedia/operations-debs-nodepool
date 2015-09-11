@@ -3,3 +3,5 @@
 0003-Convert-to-use-latest-statsd-version.patch
 0004-Convert-timing-metrics-to-milliseconds.patch
 0005-Add-debian-user-in-bootstrapServer.patch
+0006-Continue-image-refresh-if-etc-nodepool-exists.patch
+0007-node-deletion-delay-is-now-configurable.patch

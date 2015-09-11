@@ -1,0 +1,38 @@
+From: Antoine Musso <hashar@free.fr>
+Date: Fri, 11 Sep 2015 18:14:07 +0200
+Subject: Continue image refresh if /etc/nodepool exists
+
+My image already has a /etc/nodepool which causes the bootstrapServer to
+fails with:
+
+  Exception: Unable to make config dir
+  command: sudo mkdir /etc/nodepool
+
+project-config seems to create it as well:
+
+ $ tail -n2 nodepool/elements/nodepool-base/finalise.d/99-nodepool-dir
+ mkdir /etc/nodepool
+ chmod 0777 /etc/nodepool
+
+But apparently the OS instance is not impacted.
+
+Use `mkdir -p`, to ignore a directory already existing.
+
+Change-Id: I7caf3f366a97211da50aa83d49c7b10ac00458b3
+---
+ nodepool/nodepool.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/nodepool/nodepool.py b/nodepool/nodepool.py
+index 397284d..b001228 100644
+--- a/nodepool/nodepool.py
++++ b/nodepool/nodepool.py
+@@ -1103,7 +1103,7 @@ class SnapshotImageUpdater(ImageUpdater):
+         # /etc/nodepool is world writable because by the time we write
+         # the contents after the node is launched, we may not have
+         # sudo access any more.
+-        host.ssh("make config dir", "sudo mkdir /etc/nodepool")
++        host.ssh("make config dir", "sudo mkdir -p /etc/nodepool")
+         host.ssh("chmod config dir", "sudo chmod 0777 /etc/nodepool")
+         for fname in os.listdir(self.scriptdir):
+             path = os.path.join(self.scriptdir, fname)

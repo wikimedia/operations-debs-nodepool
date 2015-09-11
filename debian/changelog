@@ -1,3 +1,22 @@
+nodepool (0.1.1-wmf4) jessie-wikimedia; urgency=medium
+
+  * Fix image bootstrapping when cloud provider image already has
+    /etc/nodepool.
+
+    0006-Continue-image-refresh-if-etc-nodepool-exists.patch
+        [bf356d1] Continue image refresh if /etc/nodepool exists
+        Antoine Musso <hashar@free.fr>
+    Fix https://phabricator.wikimedia.org/T111377
+
+  * Let us tune down the node deletion delay.
+
+    0007-node-deletion-delay-is-now-configurable.patch
+        [54c7a7d] node deletion delay is now configurable
+        Antoine Musso <hashar@free.fr>
+    Fix https://phabricator.wikimedia.org/T113359
+
+ -- Antoine Musso <hashar@free.fr>  Mon, 29 Feb 2016 20:40:16 +0100
+
 nodepool (0.1.1-wmf3) jessie-wikimedia; urgency=medium
 
   * Use 'debian' user when setting up Debian based instances.

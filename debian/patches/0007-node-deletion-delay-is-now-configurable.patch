@@ -1,0 +1,116 @@
+From: Antoine Musso <hashar@free.fr>
+Date: Fri, 13 Nov 2015 17:10:53 +0100
+Subject: node deletion delay is now configurable
+
+The Nodepool daemon is hardcoded to wait one minute before deleting a
+node.  Apparently this is done to let a Jenkins publisher to finish
+copying the console output.  When such a system is not in use, that
+uneccessary delay the used nodes and slowdown the pool refilling.
+
+Add an optional setting 'delete-delay' under a new section 'nodepoold'
+in nodepool.yaml.  That section can later on be expanded to make other
+globals configurable.
+
+Delay still default to 60 seconds but is no hardcoded in the
+loadConfig() call instead of a global variable.
+
+Also fixed a tiny unrelated doc issue.
+
+Change-Id: I87afce1a1f3457e107b2802a67c49d5dbd164e4e
+---
+ doc/source/configuration.rst                      | 10 ++++++++++
+ nodepool/cmd/config_validator.py                  |  5 +++++
+ nodepool/nodepool.py                              |  7 ++++---
+ nodepool/tests/fixtures/config_validate/good.yaml |  3 +++
+ 4 files changed, 22 insertions(+), 3 deletions(-)
+
+diff --git a/doc/source/configuration.rst b/doc/source/configuration.rst
+index 44426e0..8795ffb 100644
+--- a/doc/source/configuration.rst
++++ b/doc/source/configuration.rst
+@@ -69,6 +69,16 @@ for the syntax.  Example::
+ 
+   dburi: 'mysql+pymysql://nodepool@localhost/nodepool'
+ 
++nodepoold
++---------
++This section is optional.
++
++Parameters to alter the global Nodepool behavior.
++
++  ``delete-delay`` (int)
++  Time to wait before deleting a node that has completed its job.
++  In seconds. Default 60.
++
+ cron
+ ----
+ This section is optional.
+diff --git a/nodepool/cmd/config_validator.py b/nodepool/cmd/config_validator.py
+index ed41823..3775583 100644
+--- a/nodepool/cmd/config_validator.py
++++ b/nodepool/cmd/config_validator.py
+@@ -43,6 +43,10 @@ class ConfigValidator:
+             'config-drive': bool,
+         }
+ 
++        nodepoold = {
++            'delete-delay': int,
++        }
++
+         providers = {
+             'name': str,
+             'region-name': str,
+@@ -105,6 +109,7 @@ class ConfigValidator:
+                 'host': str
+             }],
+             'cron': cron,
++            'nodepoold': nodepoold,
+             'providers': [providers],
+             'labels': [labels],
+             'targets': [targets],
+diff --git a/nodepool/nodepool.py b/nodepool/nodepool.py
+index b001228..dfb5dec 100644
+--- a/nodepool/nodepool.py
++++ b/nodepool/nodepool.py
+@@ -51,8 +51,6 @@ NODE_CLEANUP = 8 * HOURS     # When to start deleting a node that is not
+ TEST_CLEANUP = 5 * MINS      # When to start deleting a node that is in TEST
+ IMAGE_CLEANUP = 8 * HOURS    # When to start deleting an image that is not
+                              # READY or is not the current or previous image
+-DELETE_DELAY = 1 * MINS      # Delay before deleting a node that has completed
+-                             # its job.
+ 
+ # HP Cloud requires qemu compat with 0.10. That version works elsewhere,
+ # so just hardcode it for all qcow2 building
+@@ -149,7 +147,8 @@ class NodeCompleteThread(threading.Thread):
+             statsd.timing(key + '.runtime', dt)
+             statsd.incr(key + '.builds')
+ 
+-        time.sleep(DELETE_DELAY)
++        time.sleep(self.nodepool.config.delete_delay)
++
+         self.nodepool.deleteNode(node.id)
+ 
+ 
+@@ -1243,6 +1242,8 @@ class NodePool(threading.Thread):
+         newconfig.elementsdir = config.get('elements-dir')
+         newconfig.imagesdir = config.get('images-dir')
+         newconfig.dburi = config.get('dburi')
++        newconfig.delete_delay = (config.get('nodepoold', {})
++                                  .get('delete-delay', 1 * MINS))
+         newconfig.provider_managers = {}
+         newconfig.jenkins_managers = {}
+         newconfig.zmq_publishers = {}
+diff --git a/nodepool/tests/fixtures/config_validate/good.yaml b/nodepool/tests/fixtures/config_validate/good.yaml
+index c6b50fa..f0cd413 100644
+--- a/nodepool/tests/fixtures/config_validate/good.yaml
++++ b/nodepool/tests/fixtures/config_validate/good.yaml
+@@ -3,6 +3,9 @@ elements-dir: /etc/nodepool/elements
+ images-dir: /opt/nodepool_dib
+ dburi: 'mysql+pymysql://nodepool:<%= mysql_password %>@localhost/nodepool'
+ 
++nodepoold:
++    delete-delay: 600
++
+ cron:
+   cleanup: '*/1 * * * *'
+   check: '*/15 * * * *'
