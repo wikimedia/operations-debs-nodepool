@@ -69,6 +69,16 @@ for the syntax.  Example::
 
   dburi: 'mysql+pymysql://nodepool@localhost/nodepool'
 
+nodepoold
+---------
+This section is optional.
+
+Parameters to alter the global Nodepool behavior.
+
+  ``delete-delay`` (int)
+  Time to wait before deleting a node that has completed its job.
+  In seconds. Default 60.
+
 cron
 ----
 This section is optional.
