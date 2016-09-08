@@ -602,7 +602,15 @@ class ProviderManager(TaskManager):
         # This will either get the server or raise an exception
         server = self.getServerFromList(server_id)
 
-        if self.hasExtension('os-floating-ips'):
+        # WMF HACK: stop listing floating IPs
+        #
+        # Since Wikimedia setup does not use floating/public IPs, we never need
+        # to clean or list them.
+        # Short circuit to prevent generating useless ListFloatingIPsTask
+        #
+        # https://phabricator.wikimedia.org/T143943
+        #
+        if False and self.hasExtension('os-floating-ips'):
             for ip in self.listFloatingIPs():
                 if ip['instance_id'] == server_id:
                     self.log.debug('Deleting floating ip for server %s' %
