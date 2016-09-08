@@ -5,3 +5,4 @@
 0005-Add-debian-user-in-bootstrapServer.patch
 0006-Continue-image-refresh-if-etc-nodepool-exists.patch
 0007-node-deletion-delay-is-now-configurable.patch
+0008-WMF-stop-triggering-ListFloatingIPsTask-entirely.patch

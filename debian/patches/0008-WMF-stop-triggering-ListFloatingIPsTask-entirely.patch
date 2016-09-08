@@ -1,0 +1,41 @@
+From: Antoine Musso <hashar@free.fr>
+Date: Thu, 8 Sep 2016 23:19:00 +0200
+Subject: WMF: stop triggering ListFloatingIPsTask entirely
+
+We have noticed a high rate of ListFloatingIPsTask, upon investigation
+that is used when a server is assigned a public IP so it can be
+reclaimed when a server is deleted.
+
+We do not use public IP on our instances, moreover the contintcloud
+tenant has a quota of ZERO floating IPs.
+
+Shortcircuit a condition to prevent cleanup of floating IPs and thus
+triggering a ListFloatingIPsTask().
+
+Bug: T143943
+Change-Id: Ife38edc4807ad9838f7059ade2a0bb2725ddd8e4
+---
+ nodepool/provider_manager.py | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/nodepool/provider_manager.py b/nodepool/provider_manager.py
+index 1c9da64..99eefed 100644
+--- a/nodepool/provider_manager.py
++++ b/nodepool/provider_manager.py
+@@ -602,7 +602,15 @@ class ProviderManager(TaskManager):
+         # This will either get the server or raise an exception
+         server = self.getServerFromList(server_id)
+ 
+-        if self.hasExtension('os-floating-ips'):
++        # WMF HACK: stop listing floating IPs
++        #
++        # Since Wikimedia setup does not use floating/public IPs, we never need
++        # to clean or list them.
++        # Short circuit to prevent generating useless ListFloatingIPsTask
++        #
++        # https://phabricator.wikimedia.org/T143943
++        #
++        if False and self.hasExtension('os-floating-ips'):
+             for ip in self.listFloatingIPs():
+                 if ip['instance_id'] == server_id:
+                     self.log.debug('Deleting floating ip for server %s' %
