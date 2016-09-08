@@ -1,3 +1,11 @@
+nodepool (0.1.1-wmf5) jessie-wikimedia; urgency=medium
+
+  * debian/gbp.conf upstream-tag = %(version)s
+  * patch: stop triggering ListFloatingIPsTask
+    Fix T143943
+
+ -- Antoine Musso <hashar@free.fr>  Fri, 09 Sep 2016 00:19:13 +0200
+
 nodepool (0.1.1-wmf4) jessie-wikimedia; urgency=medium
 
   * Fix image bootstrapping when cloud provider image already has
