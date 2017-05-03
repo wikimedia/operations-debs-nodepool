@@ -11,7 +11,7 @@ Build-Depends: adduser,
  python-daemon,
  python-novaclient (>=2.21.0),
  python-pymysql,
- python-pbr,
+ python-pbr (<<0.10.0),
  python (>= 2.7),
  python (<< 2.8)
 Standards-Version: 3.9.6

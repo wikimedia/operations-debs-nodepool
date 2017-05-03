@@ -1,3 +1,13 @@
+nodepool (0.1.1-wmf7) jessie-wikimedia; urgency=medium
+
+  * constrain python-pbr to 0.8 from jessie
+    python-pbr 0.10 in jessie-wikimedia no more depends on python-pip and thus
+    lacks python-setuptools.  pbr also gets confused by OSLO_PACKAGE_VERSION
+    which is set to Nodepool version and pbr tries to create its egg with
+    0.1.1 instead of its version.
+
+ -- Antoine Musso <hashar@free.fr>  Wed, 03 May 2017 13:14:27 +0200
+
 nodepool (0.1.1-wmf6) jessie-wikimedia; urgency=medium
 
   * Jenkins 2.46.2 that requires POST for some operations
