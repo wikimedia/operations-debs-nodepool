@@ -6,3 +6,4 @@
 0006-Continue-image-refresh-if-etc-nodepool-exists.patch
 0007-node-deletion-delay-is-now-configurable.patch
 0008-WMF-stop-triggering-ListFloatingIPsTask-entirely.patch
+0009-WMF-force-Jenkins-queries-to-use-POST.patch

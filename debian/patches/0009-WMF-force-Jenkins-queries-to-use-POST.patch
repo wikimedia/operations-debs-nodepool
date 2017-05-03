@@ -1,0 +1,49 @@
+From: Antoine Musso <hashar@free.fr>
+Date: Wed, 3 May 2017 11:48:07 +0200
+Subject: WMF: force Jenkins queries to use POST
+
+To protect against Cross-Site Request Forgery vulnerabilities, Jenkins
+2.46.2 now requires requests to be POST when creating/deleting nodes:
+https://jenkins.io/security/advisory/2017-04-26/
+
+That can be done by passing some empty data to a Request() which trick
+urlopen in using a POST instead of a GET.  Since Nodepool extends
+Jenkins class, do it in myjenkins.py instead of python-jenkins.
+
+Bug: T144106
+Change-Id: I62b18d856b7a61e6a301f233848a9c4d620a9ab3
+---
+ nodepool/myjenkins.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/nodepool/myjenkins.py b/nodepool/myjenkins.py
+index 5434614..0f5d7c5 100644
+--- a/nodepool/myjenkins.py
++++ b/nodepool/myjenkins.py
+@@ -39,7 +39,7 @@ class Jenkins(jenkins.Jenkins):
+         if info['offline']:
+             return
+         self.jenkins_open(
+-            urlrequest.Request(self.server + TOGGLE_OFFLINE % locals()))
++            urlrequest.Request(self.server + TOGGLE_OFFLINE % locals(), b''))
+ 
+     def enable_node(self, name):
+         '''
+@@ -53,7 +53,7 @@ class Jenkins(jenkins.Jenkins):
+             return
+         msg = ''
+         self.jenkins_open(
+-            urlrequest.Request(self.server + TOGGLE_OFFLINE % locals()))
++            urlrequest.Request(self.server + TOGGLE_OFFLINE % locals(), b''))
+ 
+     def get_node_config(self, name):
+         '''
+@@ -130,7 +130,7 @@ class Jenkins(jenkins.Jenkins):
+         }
+ 
+         self.jenkins_open(urlrequest.Request(
+-            self.server + CREATE_NODE % urlparse.urlencode(params)))
++            self.server + CREATE_NODE % urlparse.urlencode(params), b''))
+ 
+         if not self.node_exists(name):
+             raise JenkinsException('create[%s] failed' % (name))

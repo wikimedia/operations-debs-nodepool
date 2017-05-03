@@ -1,3 +1,14 @@
+nodepool (0.1.1-wmf6) jessie-wikimedia; urgency=medium
+
+  * Jenkins 2.46.2 that requires POST for some operations
+
+    0009-WMF-force-Jenkins-queries-to-use-POST.patch
+        [3e7da57] WMF: force Jenkins queries to use POST
+        Antoine Musso <hashar@free.fr>
+    Fix https://phabricator.wikimedia.org/T144106
+
+ -- Antoine Musso <hashar@free.fr>  Wed, 03 May 2017 11:56:39 +0200
+
 nodepool (0.1.1-wmf5) jessie-wikimedia; urgency=medium
 
   * debian/gbp.conf upstream-tag = %(version)s
