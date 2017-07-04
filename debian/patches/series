@@ -7,3 +7,4 @@
 0007-node-deletion-delay-is-now-configurable.patch
 0008-WMF-stop-triggering-ListFloatingIPsTask-entirely.patch
 0009-WMF-force-Jenkins-queries-to-use-POST.patch
+0010-WMF-add-nodes-with-SSH-host-key-verification.patch

@@ -1,3 +1,15 @@
+nodepool (0.1.1-wmf8) jessie-wikimedia; urgency=medium
+
+  * Set SSH host key verification strategy to automatically trust it on
+    initial connection.
+
+  0010-WMF-add-nodes-with-SSH-host-key-verification.patch
+      [60818fa] WMF: add nodes with SSH host key verification
+        Antoine Musso <hashar@free.fr>
+  Fix https://phabricator.wikimedia.org/T164543
+
+ -- Antoine Musso <hashar@free.fr>  Tue, 04 Jul 2017 13:45:59 +0200
+
 nodepool (0.1.1-wmf7) jessie-wikimedia; urgency=medium
 
   * constrain python-pbr to 0.8 from jessie

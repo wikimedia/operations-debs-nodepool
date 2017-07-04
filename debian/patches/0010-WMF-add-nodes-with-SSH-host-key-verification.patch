@@ -1,0 +1,55 @@
+From: Antoine Musso <hashar@free.fr>
+Date: Tue, 4 Jul 2017 13:21:07 +0200
+Subject: WMF: add nodes with SSH host key verification
+
+Jenkins Ssh Slave plugin can checks the instances SSH host key on
+connection. There are four strategies available:
+
+1) Known hosts file Verification Strategy
+The default, reads ~/.ssh/known_hosts.  We can not collect them via
+puppet (there is no puppetmaster).
+
+2) Manually provided key Verification Strategy
+The ssh host key is provided on slave creation. Nodepool does not
+collect them when it polls the instance for SSH.
+
+3) Manually trusty key Verification Strategy
+Default to automatically trust the key on first connection.
+(strategy selected by this change)
+
+4) Non verifying Verification Strategy
+Does not verify anything.
+
+This patch change the node creation to pick (3) which would cause the
+SSH slave plugin to automatically trust the connection on the first
+connection.
+
+That should dismiss the security warning shown in Jenkins GUI:
+
+> SSH Host Key Verifiers are not configured for all SSH slaves on this
+> Jenkins instance. This could leave these slaves open to
+> man-in-the-middle attacks. Update your slave configuration to resolve
+> this.
+
+Bug: T164543
+Change-Id: Id2007ce6dc3b8b1e5aafe7dcc305c5abc143c79d
+---
+ nodepool/jenkins_manager.py | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/nodepool/jenkins_manager.py b/nodepool/jenkins_manager.py
+index 92f3e0e..6ab1fbe 100644
+--- a/nodepool/jenkins_manager.py
++++ b/nodepool/jenkins_manager.py
+@@ -35,6 +35,11 @@ class CreateNodeTask(Task):
+                                'username': self.args['username'],
+                                'privatekey': self.args['private_key'],
+                                'host': self.args['host']}
++        launcher_params['sshHostKeyVerificationStrategy'] = {
++            'stapler-class': 'hudson.plugins.sshslaves.verifiers.ManuallyTrustedKeyVerificationStrategy',
++            # Auto accept host key on first connection
++            'requireInitialManualTrust': False,
++        }
+         args = dict(
+             name=self.args['name'],
+             numExecutors=self.args['executors'],
