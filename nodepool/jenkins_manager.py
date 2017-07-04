@@ -35,6 +35,11 @@ class CreateNodeTask(Task):
                                'username': self.args['username'],
                                'privatekey': self.args['private_key'],
                                'host': self.args['host']}
+        launcher_params['sshHostKeyVerificationStrategy'] = {
+            'stapler-class': 'hudson.plugins.sshslaves.verifiers.ManuallyTrustedKeyVerificationStrategy',
+            # Auto accept host key on first connection
+            'requireInitialManualTrust': False,
+        }
         args = dict(
             name=self.args['name'],
             numExecutors=self.args['executors'],
